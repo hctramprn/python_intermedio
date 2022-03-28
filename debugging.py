@@ -20,7 +20,6 @@ def run():
 def run():
     num = input('Choose a number: ')
     assert num.isnumeric(), 'The number must be greater than 0'
-    assert num.isalnum(), 'The value can not contain letters'
     print(divisors(int(num)))
 
 
