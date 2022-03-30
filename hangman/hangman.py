@@ -16,7 +16,6 @@
 # While lives is greater than 0 loop, ask for a letter
 # If letter is in dict, display it in the terminal. Else substract a live
 
-from multiprocessing import Condition
 import os
 import random
 from unicodedata import normalize
@@ -36,7 +35,7 @@ def import_data():
         hangman_word_decode = hangman_word_encode.decode('ASCII')
 
         # Creates a dict enumerating each of the characters in the word
-        split_word = dict(enumerate(hangman_word_decode, 1))
+        split_word = dict(enumerate(hangman_word_decode, 0))
         game(split_word)
 
 # clear the terminal
@@ -67,12 +66,20 @@ def game(split_word):
 
         print(split_word)
         if character in split_word.values():
-            for key in split_word:
-                if split_word[key] == character:
-                    ok_values.append(key)
-            print(ok_values)
-            input('Sí está')
 
+            #For loop that appends the index of the correct characters
+            # for key in split_word:
+            #     if split_word[key] == character:
+            #         ok_values.append(key)
+
+            #Lambda function
+            # guessed_value = list(filter(lambda key: split_word[key] == character, split_word))
+            # ok_values += guessed_value
+
+            #List comprehension
+            guessed_value = [key for key in split_word if split_word[key] == character]
+            ok_values += guessed_value
+            input(ok_values)
         else:
             input('No está')
 
