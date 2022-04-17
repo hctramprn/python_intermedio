@@ -1,25 +1,7 @@
-# Investigar la función enumerate
-# Investigar el método get de los diccionarios
-# Investigar la sentencia os.system("clear")
-# Mejorar con un sistema de puntos
-# Mejorar con código ASCII
-# Mejorar la interfaz
-
-
-# Pseudocode
-# Import OS and clear the terminal
-# Import words from file
-# Choose a random word
-# Enumerate the chosen word
-# Clear the screen
-# Start the game with a given number of lives
-# While lives is greater than 0 loop, ask for a letter
-# If letter is in dict, display it in the terminal. Else substract a live
-
 import os
 import random
 from unicodedata import normalize
-
+from hangman_art import HANGMAN_ART
 
 # import data file and randomly choose a word
 def import_data():
@@ -33,25 +15,33 @@ def import_data():
         hangman_word_norm = normalize('NFD', hangman_word)
         hangman_word_encode = hangman_word_norm.encode('ASCII', 'ignore')
         hangman_word_decode = hangman_word_encode.decode('ASCII')
-
-        # Creates a dict enumerating each of the characters in the word
-        split_word = dict(enumerate(hangman_word_decode, 0))
-        game(split_word)
+        game(hangman_word_decode)
 
 # clear the terminal
 def clear_terminal():
     os.system('clear')
 
 # hangman game
-def game(split_word):
-    clear_terminal()
-    lives = 8
-    ok_values = []
+def game(hangman_word_decode):
+    # Creates a dict enumerating each of the characters in the word
+    split_word = dict(enumerate(hangman_word_decode, 0))
 
+    #Set the initial conditions for the game
+    clear_terminal()
+    lives = 6
+    ok_values = []
+    chosen_characters = []
+    hidden_word = ' _ ' * len(split_word)
+
+    # Runs the game until lives is greater than 0
     while lives:
         clear_terminal()
+        hangman_ascii = HANGMAN_ART[6 - lives]
+
+        # Ask for a string of one valid character [A-Z/a-z]
         try:
-            character = input('Please choose a letter: ').lower()
+            character = input(
+                f'Lives: {lives}\n\n{hangman_ascii}\n\n{hidden_word}\n\nPlease choose a letter: ').lower()
             if not (character.isalpha() and character.isascii()):
                 raise ValueError
         except ValueError:
@@ -64,24 +54,60 @@ def game(split_word):
                 f'\nYou have entered {len(character)} characters. Please only choose ONE letter. Press Enter to try again...\n')
             continue
 
-        print(split_word)
+        # Checks if it is a new character
+        if (character in chosen_characters):
+            input(
+                f'\nThis character has already been chosen. Press Enter to try again...\n')
+            continue
+        else:
+            chosen_characters.append(character)
+
+        #Checks if the character is in the dict
         if character in split_word.values():
 
-            #For loop that appends the index of the correct characters
+            # For loop that appends to a list the index of the correct characters
             # for key in split_word:
             #     if split_word[key] == character:
             #         ok_values.append(key)
 
-            #Lambda function
+            # Lambda function
             # guessed_value = list(filter(lambda key: split_word[key] == character, split_word))
             # ok_values += guessed_value
 
-            #List comprehension
-            guessed_value = [key for key in split_word if split_word[key] == character]
+            # List comprehension adds the charater to an ok_values list for future validation
+            guessed_value = [
+                key for key in split_word if split_word[key] == character]
             ok_values += guessed_value
-            input(ok_values)
         else:
-            input('No está')
+            #substracts 1 and checks if there are more lives left
+            input(
+                '\nThe chosen letter is not in the word ☹️. \n\nPress Enter to try again...\n')
+            lives -= 1
+            if lives == 0:
+                clear_terminal()
+                play_again = input(
+                f'{HANGMAN_ART[6]} \n\nYou are out of lives ☹️. The word was: \n\n{hangman_word_decode}\n\nDo you want to play again? (Y/N)').lower()
+                if play_again == 'y' or play_again == 'yes':
+                    run()
+            continue
+
+        #prints the respective ascii art for the lives left and the chosen word progress
+        hidden_word = ''
+        for char in split_word:
+            if char in ok_values:
+                hidden_word += ' ' + split_word[char] + ' '
+            else:
+                hidden_word += ' _ '
+
+        #checks if there are more characters left to guess; ends the game
+        if len(split_word) == len(ok_values):
+            clear_terminal()
+            play_again = input(
+                f'Congratulations! You guessed the word: \n\n{hangman_word_decode} \n\nDo you want to play again? (Y/N)').lower()
+            if play_again == 'y' or play_again == 'yes':
+                run()
+            else:
+                break
 
 
 def run():
